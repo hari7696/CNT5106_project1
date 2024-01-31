@@ -7,7 +7,6 @@ def main(port):
     host = socket.gethostbyname(socket.gethostname())
     print("CONNECTION ESTABLISHED WITH SERVER {} ON PORT {}".format(host, port))
     client.connect((host, port))
-    print("server connection establiashed")
 
     while True:
         
@@ -34,8 +33,9 @@ def main(port):
                 data = filetoupload.read(1024)
             filetoupload.close()
             print("Done Sending.")
+            print("STATUS: File Uploaded.")
 
-        elif command.startswith('download'):
+        elif command.startswith('get'):
             file_name = command.split(' ')[1]
             # download filename.txt
             client.send(f'server_send {file_name}'.encode('utf-8'))
@@ -43,16 +43,17 @@ def main(port):
             while True:
                 data = client.recv(1024)
                 filetodown.write(data)
+                ##checking for end of file
                 if str(data)[-4:-1] == "EOF":
                     print("Done Receiving.")
                     break
                 
             filetodown.close()
-            print("File Downloaded.")
+            print("STATUS: File Downloaded.")
 
 
         else:
-            print("Invalid command entered, please choose from following [upload filename, download filename, exit]")
+            print("Invalid command entered, please choose from following [upload filename, get filename, exit]")
 
 
 
