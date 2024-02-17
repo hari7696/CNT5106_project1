@@ -4,14 +4,9 @@ import os
 import sys
 
 
-def server_send(clientSocket, filename):
-    # send the file to client
-    pass
-
-
 def handle_client(clientSocket, addr):
 
-    clientSocket.send("Thank you for connecting".encode("utf-8"))
+    # clientSocket.send("Thank you for connecting".encode("utf-8"))
     while True:
 
         data = clientSocket.recv(1024)
@@ -29,13 +24,14 @@ def handle_client(clientSocket, addr):
             filetodown = open("new" + file_name, "wb")
             while True:
                 data = clientSocket.recv(1024)
-                filetodown.write(data)
-                ##checking for end of file
-                if str(data)[-4:-1] == "EOF":
+                # checking for end of file
+                if data[-3:] == b"EOF":
+                    data = data[:-3]
+                    filetodown.write(data)
+                    filetodown.close()
                     print("Done Receiving.")
                     break
-
-            filetodown.close()
+                filetodown.write(data)
             print("STATUS: File Downloaded.")
 
             # clientSocket.close()
@@ -47,10 +43,14 @@ def handle_client(clientSocket, addr):
             filetoupload = open(file_name, "rb")
             data = filetoupload.read(1024)
             while data:
-                clientSocket.send(data)
+
+                clientSocket.sendall(data)
                 data = filetoupload.read(1024)
+
+            clientSocket.send(b"EOF")
+            filetoupload.close()
             print("Done Sending.")
-            print("STATUS: File Transfered.")
+            print("STATUS: File Uploaded.")
 
     clientSocket.close()
 
@@ -78,4 +78,12 @@ def main(port):
 
 
 if __name__ == "__main__":
-    main(5050)
+
+    if len(sys.argv) > 1:
+        arg = sys.argv[1]
+        port = int(arg)
+    else:
+        print("No command line argument provided. choosing default 5106 port")
+        port = 5106
+
+    main(port)
